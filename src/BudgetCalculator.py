@@ -32,7 +32,7 @@ class BudgetCalculator:
         # For each category, obtain a list of expenses (Expenses per category)
         for expense in self.parsed_budget:
             # Remove store numbers (Hack format fix - will need to move to some other spot)
-            description = expense.description.replace('TST*', '').replace('SQ *', '').split()[0] # TODO - Need a cleanup description function
+            description = expense.description
 
             summary.setdefault(expense.category, {})
             summary[expense.category].setdefault(description, 0.00)

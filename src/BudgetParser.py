@@ -1,5 +1,6 @@
-from .BudgetDefines import Types, Expense
 import csv
+import re
+from .BudgetDefines import Types, Expense
 
 class BudgetParser():
     '''Responsible for parsing budget files and returning structured data'''
@@ -14,12 +15,28 @@ class BudgetParser():
         else:
             return float(num_str)
 
+    def clean_description(self, in_str):
+        ''' Remove numbers and symbols from description'''
+        pattern = r'[0-9!"#$%&\'()*+,-./:;<=>?@[\]^_`{|}~]'
+        cleaned_string = re.sub(pattern, '', in_str)
+        return cleaned_string
+
     def parse_budget_file_csv(self, file_path : str) -> list:
         '''Reads in the CSV, returns the category and cost If no category, mark as None'''
         with open(file_path, newline='', encoding="utf-8") as in_file:
-            for row in csv.reader(in_file, delimiter=','):
+            
+            # Open the file and skip the header row
+            reader = csv.reader(in_file, delimiter=',')
+            next(reader)
 
-                expense = Expense(str(row[Types.DESCRIPTION.value]), 
+            for row in reader:
+
+                # Strip the row and check if line is empty
+                if not row[0] or row[0] == '\n':
+                    continue
+            
+                description = self.clean_description(str(row[Types.DESCRIPTION.value]))
+                expense = Expense(description,
                                   str(row[Types.CATEGORY.value]), 
                                   self.str_to_float(row[Types.CREDIT.value]),
                                   self.str_to_float(row[Types.DEBIT.value]))
