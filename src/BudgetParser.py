@@ -1,6 +1,4 @@
-
 from .BudgetDefines import Types, Expense
-
 import csv
 
 class BudgetParser():
