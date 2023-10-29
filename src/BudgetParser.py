@@ -1,5 +1,6 @@
 import csv
 import re
+
 from .BudgetDefines import Types, Expense
 
 class BudgetParser():
@@ -30,9 +31,8 @@ class BudgetParser():
             next(reader)
 
             for row in reader:
-
-                # Strip the row and check if line is empty
-                if not row[0] or row[0] == '\n':
+                # Check if line is empty
+                if not row:
                     continue
             
                 description = self.clean_description(str(row[Types.DESCRIPTION.value]))
