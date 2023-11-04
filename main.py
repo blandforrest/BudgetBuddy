@@ -3,7 +3,7 @@ import logging
 import os
 import sys
 
-from BudgetBuddy.Parser import Parser
+from BudgetBuddy.Parser import CSVParser
 from BudgetBuddy.Calculator import Calculator
 from BudgetBuddy.Interface import Interface
 
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     logging.info('Successfully loaded %s!', file_path)
 
     # Create BudgetBuddy
-    parser = Parser()
+    parser = CSVParser()
     calculator = Calculator(parser, file_path)
     interface = Interface(calculator)
     interface.generate_sunburst_data()
