@@ -3,13 +3,13 @@ import logging
 import os
 import sys
 
-from src.BudgetParser import BudgetParser
-from src.BudgetCalculator import BudgetCalculator
-from src.BudgetInterface import BudgetInterface
+from BudgetBuddy.Parser import Parser
+from BudgetBuddy.Calculator import Calculator
+from BudgetBuddy.Interface import Interface
 
 if __name__ == '__main__':
     # Configure the logging system
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+    logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
     logging.info('Current working directory: %s', os.getcwd())
     
     # Get the file path from arguments
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     logging.info('Successfully loaded %s!', file_path)
 
     # Create BudgetBuddy
-    parser = BudgetParser()
-    calculator = BudgetCalculator(parser, file_path)
-    interface = BudgetInterface(calculator)
+    parser = Parser()
+    calculator = Calculator(parser, file_path)
+    interface = Interface(calculator)
     interface.generate_sunburst_data()
