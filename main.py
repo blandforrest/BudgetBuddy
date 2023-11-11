@@ -11,7 +11,7 @@ if __name__ == '__main__':
     # Configure the logging system
     logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
     logging.info('Current working directory: %s', os.getcwd())
-    
+
     # Get the file path from arguments
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument('file_path', help='File path to statement')
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     logging.info('Successfully loaded %s!', file_path)
 
     # Create BudgetBuddy
-    parser = CSVParser()
-    calculator = Calculator(parser, file_path)
+    parser = CSVParser(file_path)
+    calculator = Calculator(parser)
     interface = Interface(calculator)
     interface.generate_sunburst_data()

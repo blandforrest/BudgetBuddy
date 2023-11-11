@@ -1,6 +1,6 @@
 import plotly.express as px
 import polars as pl
-import plotly.graph_objects as go
+from plotly import graph_objects as go
 import logging
 
 class Interface():
@@ -8,6 +8,7 @@ class Interface():
     def __init__(self, calculator):
         self.calculator = calculator
         self.logger     = logging.getLogger('BudgetBuddy.Interface')
+
 
     def generate_sunburst_data(self):
         '''Pull data from the calculator and format for sunburst'''
@@ -43,7 +44,8 @@ class Interface():
 
         self.logger.debug('Displaying Graph!')
         fig.update_layout(margin = dict(t=0, l=0, r=0, b=0))
-        fig.show()
+        fig.show(renderer='iframe')
+
 
     def generate_pie(self):
         '''Given the categories and amounts, generate a pie graph'''

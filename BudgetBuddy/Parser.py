@@ -1,3 +1,4 @@
+import xml.etree.ElementTree as ET
 import logging
 import csv
 import re
@@ -8,10 +9,12 @@ from .Defines import Types, Expense
 
 class FileParser(ABC):
     ''' Abstract class for the File Parser '''
-    def __init__(self):
+    def __init__(self, file_path):
         self.expense_list = []
         self.logger       = logging.getLogger('BudgetBuddy.Parser')
-    
+        self.parse_budget_file(file_path)
+
+
     @staticmethod
     def str_to_float(num_str : str) -> float:
         '''Convert string to int, deal with whitespace'''
@@ -31,11 +34,11 @@ class FileParser(ABC):
         cleaned_str = re.sub(r'[0-9!"#$%&\'()*+,-./:;<=>?@[\]^_`{|}~]', '', in_str)
         cleaned_str = re.sub(r'\s+', ' ', cleaned_str)
         return cleaned_str.strip()
-    
+
     @abstractmethod
     def parse_budget_file(self, file_path : str) -> list[Expense]:
         '''Parse a file, return a list of expenses'''
-        pass
+
 
 
 class CSVParser(FileParser):
@@ -73,4 +76,15 @@ class QFXParser(FileParser):
     '''Parser for QFX Files'''
     def parse_budget_file(self, file_path : str) -> list[Expense]:
         '''Parse a file, return a list of expenses'''
-        pass
+
+        root = ET.parse(file_path).getroot()
+        
+        for transaction in root.iter('STMTTRN'):
+            if transaction.find('TRNTYPE').text != 'DEBIT':
+                continue
+            expense = Expense(transaction.find('MEMO'),
+                              "Merchandise", # TODO: Need some kind of dictionary to find the Category
+                              0.0,
+                              abs(self.str_to_float(transaction.find('TRNAMT'))))
+
+            self.expense_list.append(expense)
