@@ -27,7 +27,7 @@ class Calculator:
             for expense in self.parsed_budget:
                 summary.setdefault(expense.category, 0.00)
                 summary[expense.category] += expense.debit
-        except Exception as ex:
+        except KeyError as ex:
             self.logger.error('Failed during category reduction: %s', ex.with_traceback)
             return None
 
@@ -44,7 +44,7 @@ class Calculator:
                 summary.setdefault(expense.category, {})
                 summary[expense.category].setdefault(description, 0.00)
                 summary[expense.category][description] += expense.debit
-        except Exception as ex:
+        except KeyError as ex:
             self.logger.error('Failed during expense reduction: %s', ex.with_traceback)
             return None
 

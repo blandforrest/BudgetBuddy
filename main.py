@@ -3,7 +3,7 @@ import logging
 import os
 import sys
 
-from BudgetBuddy.Parser import CSVParser
+from BudgetBuddy.Parser import CSVParser, QIFParser, QFXParser
 from BudgetBuddy.Calculator import Calculator
 from BudgetBuddy.Interface import Interface
 
@@ -24,8 +24,19 @@ if __name__ == '__main__':
 
     logging.info('Successfully loaded %s!', file_path)
 
+    # Choose parser based on extension
+    parser = None
+    if file_path.lower().endswith('csv'):
+        parser = CSVParser(file_path)
+    elif file_path.lower().endswith('qif'):
+        parser = QIFParser(file_path)
+    elif file_path.lower().endswith('qfx'):
+        parser = QFXParser(file_path)
+    else:
+        logging.fatal('UNSUPPORTED FILE TYPE %s! Exiting...', file_path) 
+
+
     # Create BudgetBuddy
-    parser = CSVParser(file_path)
     calculator = Calculator(parser)
     interface = Interface(calculator)
     interface.generate_sunburst_data()

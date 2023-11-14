@@ -1,5 +1,8 @@
+from difflib import SequenceMatcher as SM
+from .CategoryMap import CATEGORY_MAP
 import xml.etree.ElementTree as ET
 import logging
+import json
 import csv
 import re
 
@@ -13,7 +16,6 @@ class FileParser(ABC):
         self.expense_list = []
         self.logger       = logging.getLogger('BudgetBuddy.Parser')
         self.parse_budget_file(file_path)
-
 
     @staticmethod
     def str_to_float(num_str : str) -> float:
@@ -40,6 +42,37 @@ class FileParser(ABC):
         '''Parse a file, return a list of expenses'''
 
 
+class FileCategoryParser(FileParser):
+    '''Accounts for formats with no category data'''
+    def __init__(self, file_path):
+        self.category_map  = CATEGORY_MAP
+        self.name_list = list(self.category_map.keys())
+        super().__init__(file_path)
+
+    def key_category_map(self, key : str) -> str:
+        '''Check if the key is in the map, otherwise, fuzzy check and confirm with user'''
+        if key in self.category_map:
+            return self.category_map[key]
+        else:
+            # Iterate through the name list, return the most similar string (This is expensive ...)
+            value = ''
+            score = 0.0
+            for name in self.name_list:
+                tmpscore = SM(None, key.lower(), name).ratio()*100
+
+                if tmpscore > score:
+                    value = name
+                    score = tmpscore
+
+            if score < 70:
+                return 'Unknown'
+
+            if value != '':
+                category = self.category_map[value]
+                self.logger.debug("Match correct? %s vs. %s Category: %s Score: %f", key.lower(), value, category, score)
+                return category
+            return 'Unknown'
+
 
 class CSVParser(FileParser):
     '''Parser for CSV Files'''
@@ -58,7 +91,7 @@ class CSVParser(FileParser):
 
                 description = FileParser.clean_description(str(row[Types.DESCRIPTION.value]))
                 expense     = Expense(description,
-                                      str(row[Types.CATEGORY.value]), 
+                                      str(row[Types.CATEGORY.value]),
                                       FileParser.str_to_float(row[Types.CREDIT.value]),
                                       FileParser.str_to_float(row[Types.DEBIT.value]))
 
@@ -66,25 +99,56 @@ class CSVParser(FileParser):
 
         return self.expense_list
 
-class QIFParser(FileParser):
+class QIFParser(FileCategoryParser):
     '''Parser for QIF Files'''
     def parse_budget_file(self, file_path : str) -> list[Expense]:
         '''Parse a file, return a list of expenses'''
-        pass
+        try:
+            with open(file_path, 'r', encoding="UTF-8") as in_file:
+                tmp_str = [] # List of strings
+                for line in in_file:
+                    line = line.rstrip()
 
-class QFXParser(FileParser):
-    '''Parser for QFX Files'''
+                    # Remove Comments
+                    if line[0] == '!':
+                        continue
+
+                    # Build string until carrot
+                    tmp_str.append(line)
+
+                    # Hit the end of entry
+                    if '^' in line:
+                        name = tmp_str[3].replace('P','', 1)
+                        expense = Expense(name,
+                                        self.key_category_map(name),
+                                        0.0,
+                                        abs(self.str_to_float(tmp_str[1].replace('T-','', 1))))
+
+                        self.expense_list.append(expense)
+                        tmp_str = []
+        except FileNotFoundError as ex:
+            raise FileNotFoundError('Unable to find QIF File') from ex
+
+
+class QFXParser(FileCategoryParser):
+    '''Parser for QFX, OFX, QBO Files'''
     def parse_budget_file(self, file_path : str) -> list[Expense]:
         '''Parse a file, return a list of expenses'''
 
         root = ET.parse(file_path).getroot()
-        
+
         for transaction in root.iter('STMTTRN'):
             if transaction.find('TRNTYPE').text != 'DEBIT':
                 continue
-            expense = Expense(transaction.find('MEMO'),
-                              "Merchandise", # TODO: Need some kind of dictionary to find the Category
+
+            name = self.clean_description(transaction.find('MEMO').text)
+            expense = Expense(name,
+                              self.key_category_map(name),
                               0.0,
-                              abs(self.str_to_float(transaction.find('TRNAMT'))))
+                              abs(self.str_to_float(transaction.find('TRNAMT').text)))
 
             self.expense_list.append(expense)
+
+class PDFParser(FileParser):
+    '''Parser for PDF Files'''
+    pass

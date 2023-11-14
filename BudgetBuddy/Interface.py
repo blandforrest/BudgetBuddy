@@ -44,7 +44,8 @@ class Interface():
 
         self.logger.debug('Displaying Graph!')
         fig.update_layout(margin = dict(t=0, l=0, r=0, b=0))
-        fig.show(renderer='iframe')
+        #fig.show(renderer='iframe')
+        fig.show()
 
 
     def generate_pie(self):
