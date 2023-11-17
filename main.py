@@ -3,7 +3,7 @@ import logging
 import os
 import sys
 
-from BudgetBuddy.Parser import CSVParser, QIFParser, QFXParser
+from BudgetBuddy.Parser import CSVParser, QIFParser, QFXParser, PDFParser
 from BudgetBuddy.Calculator import Calculator
 from BudgetBuddy.Interface import Interface
 
@@ -32,6 +32,8 @@ if __name__ == '__main__':
         parser = QIFParser(file_path)
     elif file_path.lower().endswith('qfx'):
         parser = QFXParser(file_path)
+    elif file_path.lower().endswith('pdf'):
+        parser = PDFParser(file_path)
     else:
         logging.fatal('UNSUPPORTED FILE TYPE %s! Exiting...', file_path) 
 

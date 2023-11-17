@@ -1,6 +1,7 @@
 from difflib import SequenceMatcher as SM
-from .CategoryMap import CATEGORY_MAP
+from .CategoryMap import CATEGORY_MAP, CITY_LIST_FL
 import xml.etree.ElementTree as ET
+import PyPDF2
 import logging
 import json
 import csv
@@ -149,6 +150,40 @@ class QFXParser(FileCategoryParser):
 
             self.expense_list.append(expense)
 
-class PDFParser(FileParser):
+class PDFParser(FileCategoryParser):
     '''Parser for PDF Files'''
-    pass
+    def remove_city_state_from_description(self, description : str):
+        '''Remove cities/state using regex'''
+        florida_cities_pattern = re.compile(r'((' + '|'.join(CITY_LIST_FL) + r')' + r'FL)', re.IGNORECASE)
+
+        return florida_cities_pattern.sub('', description)
+
+    def parse_budget_file(self, file_path : str) -> list[Expense]:
+        with open(file_path, 'rb') as in_file:
+            pdf_reader = PyPDF2.PdfReader(in_file)
+
+            for page_num, page in enumerate(pdf_reader.pages):
+                page = pdf_reader.pages[page_num]
+                text = page.extract_text()
+
+                if page_num > 2:
+                    # Use regular expressions to extract transaction details
+                    date_pattern = r'(((Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s([0-9]{1,2})\s){2}(.*)[0-9]*\.[0-9]{2})'
+
+                    dates = re.findall(date_pattern, text)
+                    
+                    # Use the first matching group
+                    for match in dates:
+                        cleaned_str = re.sub(r'((Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s([0-9]{1,2})\s){2}', ' ', match[0])
+
+                        split_string = cleaned_str.split('$')
+
+                        description = self.remove_city_state_from_description(self.clean_description(split_string[0]))
+                        cost        = self.str_to_float(split_string[1])
+
+                        expense = Expense(description,
+                                          self.key_category_map(description),
+                                          0.0,
+                                          abs(cost))
+
+                        self.expense_list.append(expense)
