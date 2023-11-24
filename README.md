@@ -10,6 +10,6 @@ Instructions:
         - Select CSV
         - Select Month
     - Run BudgetBuddy
-        - main.exe "path/to/file.csv"
+        - python main "path/to/file.csv"
         - A webpage will open, hover over categories and expenses to learn more
         - Clicking a category will give you a larger view of the expenses
