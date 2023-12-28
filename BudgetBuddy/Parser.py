@@ -18,6 +18,10 @@ class FileParser(ABC):
         self.logger       = logging.getLogger('BudgetBuddy.Parser')
         self.parse_budget_file(file_path)
 
+    def get_expense_list(self) -> list[Expense]:
+        '''Return the expense list'''
+        return self.expense_list
+
     @staticmethod
     def str_to_float(num_str : str) -> float:
         '''Convert string to int, deal with whitespace'''
@@ -41,7 +45,6 @@ class FileParser(ABC):
     @abstractmethod
     def parse_budget_file(self, file_path : str) -> list[Expense]:
         '''Parse a file, return a list of expenses'''
-
 
 class FileCategoryParser(FileParser):
     '''Accounts for formats with no category data'''

@@ -35,10 +35,10 @@ if __name__ == '__main__':
     elif file_path.lower().endswith('pdf'):
         parser = PDFParser(file_path)
     else:
-        logging.fatal('UNSUPPORTED FILE TYPE %s! Exiting...', file_path) 
+        logging.fatal('UNSUPPORTED FILE TYPE %s! Exiting...', file_path)
 
 
     # Create BudgetBuddy
-    calculator = Calculator(parser)
+    calculator = Calculator(parser.get_expense_list())
     interface = Interface(calculator)
     interface.generate_sunburst_data()

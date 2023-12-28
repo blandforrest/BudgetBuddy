@@ -3,8 +3,8 @@ import logging
 class Calculator:
     '''Return various calculations on the data'''
 
-    def __init__(self, parser):
-        self.parsed_budget    = parser.expense_list
+    def __init__(self, expense_list):
+        self.parsed_budget    = expense_list
         self.expense_category = 0.00
         self.total_expense    = 0.00
         self.category_list    = self.create_category_list()
