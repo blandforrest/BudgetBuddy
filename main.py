@@ -3,9 +3,7 @@ import logging
 import os
 import sys
 
-from BudgetBuddy.Parser import CSVParser, QIFParser, QFXParser, PDFParser
-from BudgetBuddy.Calculator import Calculator
-from BudgetBuddy.Interface import Interface
+from BudgetBuddy import BudgetGraph
 
 if __name__ == '__main__':
     # Configure the logging system
@@ -25,20 +23,10 @@ if __name__ == '__main__':
     logging.info('Successfully loaded %s!', file_path)
 
     # Choose parser based on extension
-    parser = None
-    if file_path.lower().endswith('csv'):
-        parser = CSVParser(file_path)
-    elif file_path.lower().endswith('qif'):
-        parser = QIFParser(file_path)
-    elif file_path.lower().endswith('qfx'):
-        parser = QFXParser(file_path)
-    elif file_path.lower().endswith('pdf'):
-        parser = PDFParser(file_path)
-    else:
+    if not file_path.lower().endswith('csv'):
         logging.fatal('UNSUPPORTED FILE TYPE %s! Exiting...', file_path)
 
+    budget_graph = BudgetGraph(file_path)
+    budget_graph.display_graph()
 
-    # Create BudgetBuddy
-    calculator = Calculator(parser.get_expense_list())
-    interface = Interface(calculator)
-    interface.generate_sunburst_data()
+
